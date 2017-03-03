@@ -29,6 +29,12 @@ class Keeper
     protected $amount;
 
     /**
+     * Amount precision
+     * @var int
+     */
+    protected $precision = 2;
+
+    /**
      * @var int
      */
     protected $dividend;
@@ -36,7 +42,13 @@ class Keeper
     /**
      * @var float
      */
-    protected $varianceFactor;
+    protected $varianceFactor = 1.0;
+
+    /**
+     * Minimum amount can assign
+     * @var int
+     */
+    protected $minAmount = 0.01;
 
     /**
      * Keeper constructor.
@@ -60,7 +72,22 @@ class Keeper
      */
     public function setAmount($amount)
     {
+        $amount = $this->cutByPrecision($amount);
+
         $this->amount = $this->checkAmount($amount);
+
+        $this->checkAmountAndDividend();
+
+        return $this;
+    }
+
+    /**
+     * @param int $precision
+     * @return $this
+     */
+    public function setPrecision($precision)
+    {
+        $this->precision = $this->checkPrecision($precision);
 
         return $this;
     }
@@ -76,7 +103,25 @@ class Keeper
     {
         $this->dividend = $this->checkDividend($dividend);
 
+        $this->checkAmountAndDividend();
+
         return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getAmount()
+    {
+        return $this->cutByPrecision($this->amount);
+    }
+
+    /**
+     * @return int
+     */
+    public function getDividend()
+    {
+        return $this->dividend;
     }
 
     /**
@@ -92,27 +137,29 @@ class Keeper
     }
 
     /**
+     * @param int $min
+     * @return $this
+     */
+    public function setMinAmount($min)
+    {
+        $min = $this->cutByPrecision($min);
+
+        $this->minAmount = $this->checkMinAmount($min);
+
+        return $this;
+    }
+
+    /**
      * Assign money
      * @return bool|float
      */
     public function assign()
     {
-        $dividend = $this->dividend;
-        $remain = abs($this->amount);
-
-        $isNegative = $this->amount < 0;
-
-        if ($remain == 0 || $dividend == 0) {
+        if ($this->amount == 0 || $this->dividend == 0) {
             return 0;
         }
 
-        if ($remain == $dividend) {
-            $get = 1;
-        } else {
-            $get = $this->randomAmount($remain, $dividend);
-        }
-
-        $get = $isNegative ? -$get : $get;
+        $get = $this->randomAmount($this->amount, $this->dividend);
 
         $this->amount -= $get;
         $this->dividend--;
@@ -137,13 +184,14 @@ class Keeper
             if ($dividend == 1) {
                 $get = $remain;
             } else {
-                $avg = floor($remain / $dividend);
+                $avg = $remain / $dividend;
+                $max = $remain - $this->minAmount * ($dividend - 1);
                 $get = $avg + $this->getNoise($avg);
-                // make sure everyone can get at least a penny
-                if ($get <= 0) {
-                    $get = 1;
-                } elseif ($get > $remain - $dividend + 1) {
-                    $get = $remain - $dividend + 1;
+
+                if ($get < $this->minAmount) {
+                    $get = $this->minAmount;
+                } elseif ($get > $max) {
+                    $get = $max;
                 }
             }
             if ($i++ == $randIndex) {
@@ -153,7 +201,7 @@ class Keeper
             $remain -= $get;
         }
 
-        return (int)$get;
+        return $this->cutByPrecision($get);
     }
 
     /**
@@ -162,18 +210,29 @@ class Keeper
      */
     protected function getNoise($avg)
     {
+        $avg = abs($this->powForward($avg));
+
         $range = floor($avg * $this->varianceFactor);
 
-        return rand(-$range, $range);
+        return $this->powBackward(rand(-$range, $range));
     }
 
     protected function checkAmount($amount)
     {
-        if (!is_int($amount)) {
+        if ((!is_float($amount) && !is_int($amount)) || $amount <= 0) {
             Exception::pop(Exception::ERROR_AMOUNT_ILLEGAL);
         }
 
         return $amount;
+    }
+
+    protected function checkPrecision($precision)
+    {
+        if (!is_int($precision) || $precision < 0 || $precision > 3) {
+            Exception::pop(Exception::ERROR_PRECISION_ILLEGAL);
+        }
+
+        return $precision;
     }
 
     protected function checkDividend($dividend)
@@ -187,10 +246,61 @@ class Keeper
 
     protected function checkVarianceFactor($factor)
     {
-        if (!is_float($factor) || $factor < 0) {
+        if ( (!is_float($factor) && !is_int($factor))
+            || $factor < 0
+        ) {
             Exception::pop(Exception::ERROR_VARIANCE_FACTOR_ILLEGAL);
         }
 
         return $factor;
+    }
+
+    protected function checkMinAmount($min)
+    {
+        if ((!is_float($min) && !is_int($min)) || $min <= 0) {
+            Exception::pop(Exception::ERROR_MIN_AMOUNT_ILLEGAL);
+        }
+
+        $this->checkAmountAndDividend();
+
+        return $min;
+    }
+
+    protected function checkAmountAndDividend()
+    {
+        if ($this->amount
+            && $this->dividend
+            && $this->minAmount
+            && abs($this->amount) < abs($this->dividend * $this->minAmount)
+        ) {
+            Exception::pop(Exception::ERROR_MIN_AMOUNT_TOO_BIG);
+        }
+    }
+
+    /**
+     * @param $amount
+     * @return mixed
+     */
+    protected function cutByPrecision($amount)
+    {
+        return round($amount, $this->precision);
+    }
+
+    /**
+     * @param $value
+     * @return int
+     */
+    protected function powForward($value)
+    {
+        return (int)($value * pow(10, $this->precision));
+    }
+
+    /**
+     * @param $value
+     * @return float
+     */
+    protected function powBackward($value)
+    {
+        return round($value * pow(10, -$this->precision), $this->precision);
     }
 }

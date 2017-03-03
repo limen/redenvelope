@@ -60,7 +60,7 @@ class Envelope
     public function __construct($id = null, $remain = null, $dividend = null)
     {
         $this->id = $id;
-        $this->remain = $this->castInputAmount($remain);
+        $this->remain = $remain;
         $this->dividend = (int)$dividend;
     }
 
@@ -90,7 +90,7 @@ class Envelope
         $this->dividend--;
         $this->remain -= $amount;
 
-        return $this->castOutputAmount($amount);
+        return $amount;
     }
 
     /**
@@ -145,7 +145,7 @@ class Envelope
      */
     public function setRemain($remain)
     {
-        $this->remain = $this->castInputAmount($remain);
+        $this->remain = $remain;
 
         return $this;
     }
@@ -166,7 +166,7 @@ class Envelope
      */
     public function getRemain()
     {
-        return $this->castOutputAmount($this->remain);
+        return $this->remain;
     }
 
     /**
@@ -175,24 +175,6 @@ class Envelope
     public function getDividend()
     {
         return $this->dividend;
-    }
-
-    /**
-     * @param $amount
-     * @return mixed
-     */
-    protected function castInputAmount($amount)
-    {
-        return (int)($amount * 100);
-    }
-
-    /**
-     * @param $amount
-     * @return float
-     */
-    protected function castOutputAmount($amount)
-    {
-        return round($amount * 0.01, 2);
     }
 
 }
