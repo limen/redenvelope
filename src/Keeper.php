@@ -12,9 +12,7 @@ namespace Limen\RedEnvelope;
 
 /**
  * Class Keeper
- *
  * Keep and assign the money.
- * The amount should be integer to avoid precision problem.
  *
  * @package Limen\RedEnvelope
  *
