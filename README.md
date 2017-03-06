@@ -3,8 +3,10 @@
 ## Features
 
 + Amount is assigned randomly.
-+ Variance factor could be adjusted on the fly which would influence the variance of the assignment sequence.
-+ Use lock to avoid conflict caused by concurrency.
++ Minimum value of each assignment is settable.
++ Amount precision is settable.
++ Variance factor is settable which would influence the variance of the assignment sequence.
++ Use lock to avoid conflicts caused by concurrency.
 
 ## Installation
 
@@ -20,7 +22,7 @@ use Limen\RedEnvelope\Lock\RedLock;
 $id = '123';                    // unique id
 $remain = 212.23;               // envelope remain amount
 $dividend = 10;                 // how many fragments to divide amount into
-$minAmount = 10.1;              // minimum amount of each assignment
+$minAssignment = 10.1;              // minimum value of each assignment
 
 $varianceFactor = 1.1;          // Appropriate value should between 0.5 and 1.5, 1.1 may be the best.
                                 // The greater this value, the greater the variance of the divided sequence is.
@@ -49,7 +51,7 @@ $envelope->setRemain($remain)
 $keeper = new Keeper(null, null, $varianceFactor);         // Keeper who keep and assign money
 
 // Set min amount keeper can assign. Default is 0.01
-$keeper->setMinAmount($minAmount);
+$keeper->setMinAssignment($minAssignment);
 $envelope->setKeeper($keeper);
 
 $amount = $envelope->open();
@@ -78,16 +80,16 @@ function float_equal($a, $b)
 $total = 212.218;
 $precision = 3;             // Keeper's precision. Could be 0, 1, 2 or 3
 $dividend = 10;
-$minAmount = 10.1;
+$minAssignment = 10.1;
 $varianceFactor = 1.0;
 $keeper = new Keeper($total, $dividend, $varianceFactor);
-$keeper->setMinAmount($minAmount)->setPrecision($precision);
+$keeper->setMinAssignment($minAssignment)->setPrecision($precision);
 
 $amounts = [];
 
 for ($i = 0; $i < $dividend; $i++) {
     $assignment = $keeper->assign();
-    if ($assignment >= $minAmount) {
+    if ($assignment >= $minAssignment) {
         $amounts[] = $assignment;
     } else {
         // shit happens

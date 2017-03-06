@@ -25,8 +25,8 @@ class Exception extends \Exception
     const ERROR_PRECISION_ILLEGAL = 9;
     const ERROR_DIVIDEND_ILLEGAL = 5;
     const ERROR_VARIANCE_FACTOR_ILLEGAL = 6;
-    const ERROR_MIN_AMOUNT_ILLEGAL = 7;
-    const ERROR_MIN_AMOUNT_TOO_BIG = 8;
+    const ERROR_MIN_ASSIGNMENT_ILLEGAL = 7;
+    const ERROR_AMOUNT_NOT_ENOUGH = 8;
 
     /**
      * Pop exception
@@ -64,11 +64,11 @@ class Exception extends \Exception
             case static::ERROR_PRECISION_ILLEGAL:
                 $msg = 'Illegal precision. Should be 0, 1, 2 or 3';
                 break;
-            case static::ERROR_MIN_AMOUNT_ILLEGAL:
-                $msg = 'Illegal min amount. Should be positive number.';
+            case static::ERROR_MIN_ASSIGNMENT_ILLEGAL:
+                $msg = 'Illegal minimum assignment. Should be positive number.';
                 break;
-            case static::ERROR_MIN_AMOUNT_TOO_BIG:
-                $msg = 'Min amount is too big. Check amount and dividend.';
+            case static::ERROR_AMOUNT_NOT_ENOUGH:
+                $msg = 'Amount is not enough. Check dividend and minimum assignment.';
                 break;
             default:
                 break;

@@ -45,10 +45,10 @@ class Keeper
     protected $varianceFactor = 1.0;
 
     /**
-     * Minimum amount can assign
+     * Minimum value of each assignment
      * @var int
      */
-    protected $minAmount = 0.01;
+    protected $minAssignment = 0.01;
 
     /**
      * Keeper constructor.
@@ -76,7 +76,7 @@ class Keeper
 
         $this->amount = $this->checkAmount($amount);
 
-        $this->checkAmountAndDividend();
+        $this->checkAmountEnough();
 
         return $this;
     }
@@ -103,7 +103,7 @@ class Keeper
     {
         $this->dividend = $this->checkDividend($dividend);
 
-        $this->checkAmountAndDividend();
+        $this->checkAmountEnough();
 
         return $this;
     }
@@ -140,11 +140,11 @@ class Keeper
      * @param int $min
      * @return $this
      */
-    public function setMinAmount($min)
+    public function setMinAssignment($min)
     {
         $min = $this->cutByPrecision($min);
 
-        $this->minAmount = $this->checkMinAmount($min);
+        $this->minAssignment = $this->checkMinAssignment($min);
 
         return $this;
     }
@@ -185,11 +185,11 @@ class Keeper
                 $get = $remain;
             } else {
                 $avg = $remain / $dividend;
-                $max = $remain - $this->minAmount * ($dividend - 1);
+                $max = $remain - $this->minAssignment * ($dividend - 1);
                 $get = $avg + $this->getNoise($avg);
 
-                if ($get < $this->minAmount) {
-                    $get = $this->minAmount;
+                if ($get < $this->minAssignment) {
+                    $get = $this->minAssignment;
                 } elseif ($get > $max) {
                     $get = $max;
                 }
@@ -255,25 +255,25 @@ class Keeper
         return $factor;
     }
 
-    protected function checkMinAmount($min)
+    protected function checkMinAssignment($min)
     {
         if ((!is_float($min) && !is_int($min)) || $min <= 0) {
-            Exception::pop(Exception::ERROR_MIN_AMOUNT_ILLEGAL);
+            Exception::pop(Exception::ERROR_MIN_ASSIGNMENT_ILLEGAL);
         }
 
-        $this->checkAmountAndDividend();
+        $this->checkAmountEnough();
 
         return $min;
     }
 
-    protected function checkAmountAndDividend()
+    protected function checkAmountEnough()
     {
         if ($this->amount
             && $this->dividend
-            && $this->minAmount
-            && abs($this->amount) < abs($this->dividend * $this->minAmount)
+            && $this->minAssignment
+            && abs($this->amount) < abs($this->dividend * $this->minAssignment)
         ) {
-            Exception::pop(Exception::ERROR_MIN_AMOUNT_TOO_BIG);
+            Exception::pop(Exception::ERROR_AMOUNT_NOT_ENOUGH);
         }
     }
 
