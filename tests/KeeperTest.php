@@ -8,21 +8,15 @@
  * file that was distributed with this source code.
  */
 
-namespace Limen\RedEnvelope;
-
+use Limen\RedEnvelope\Keeper;
 use PHPUnit\Framework\TestCase;
-
-$baseDir = dirname(dirname(__FILE__));
-
-require_once($baseDir . "/src/Keeper.php");
-require_once($baseDir . "/src/Exception.php");
 
 /**
  * Class KeeperTest
  *
  * @author LI Mengxiang <limengxiang876@gmail.com>
  */
-class KeeperTest extends TestCase
+class KeeperTest extends BaseTest
 {
     public function testAssignment()
     {
@@ -32,7 +26,7 @@ class KeeperTest extends TestCase
 
         $amount = $this->getAmount($precision);
         $dividend = $this->getDividend();
-        $minAssignment = $this->getMinAssignment($precision);
+        $minAssignment = $this->getMinAssignment($precision, $amount, $dividend);
         $vf = $this->getVarianceFactor();
 
         echo PHP_EOL;
@@ -42,65 +36,33 @@ class KeeperTest extends TestCase
         echo "Variance factor: " . $vf . PHP_EOL;
         echo "Precision: " . $precision . PHP_EOL;
 
-        try {
-            $keeper->setAmount($amount)
-                ->setDividend($dividend)
-                ->setPrecision($precision)
-                ->setMinAssignment($minAssignment)
-                ->setVarianceFactor($vf);
-            $assignments = [];
-            for ($i = 0; $i<$dividend; $i++) {
-                $assignment = $keeper->assign();
-                $this->assertGreaterThanOrEqual($minAssignment, $assignment);
-                $assignments[] = $assignment;
-            }
-
-            echo 'Assignments: ' . PHP_EOL;
-            foreach ($assignments as $k => $value) {
-                printf('No.%d: %f' . PHP_EOL, $k, $value);
-            }
-
-            $this->assertEquals(array_sum($assignments), $amount);
-            $this->assertEquals($keeper->getAmount(), 0);
-            $this->assertEquals($keeper->getDividend(), 0);
-            $this->assertEquals($keeper->assign(), 0);
-            $this->assertEquals($keeper->getAmount(), 0);
-            $this->assertEquals($keeper->getDividend(), 0);
-        } catch (Exception $e) {
-            $this->assertEquals($e->getCode(), Exception::ERROR_AMOUNT_NOT_ENOUGH);
-            echo $e->getMessage() . PHP_EOL;
-        }
-    }
-
-    protected function getMinAssignment($precision)
-    {
-        $min = round(rand(1,10000) / 1000, $precision);
-
-        if ($min === 0) {
-            $min = pow(1, -$precision);
+        $keeper->setAmount($amount)
+            ->setDividend($dividend)
+            ->setPrecision($precision)
+            ->setMinAssignment($minAssignment)
+            ->setVarianceFactor($vf);
+        $assignments = [];
+        for ($i = 0; $i < $dividend; $i++) {
+            $remain = $keeper->getAmount();
+            $assignment = $keeper->assign();
+            $this->assertGreaterThanOrEqual($minAssignment, $assignment);
+            $this->assertGreaterThan(0, $assignment);
+            $this->assertEquals($keeper->getDividend(), $dividend - 1 - $i);
+            $this->assertEquals($keeper->getAmount(), $remain - $assignment);
+            $assignments[] = $assignment;
         }
 
-        return $min;
+        echo 'Assignments: ' . PHP_EOL;
+        foreach ($assignments as $k => $value) {
+            printf('No.%d: %f' . PHP_EOL, $k, $value);
+        }
+
+        $this->assertEquals(array_sum($assignments), $amount);
+        $this->assertEquals($keeper->getAmount(), 0);
+        $this->assertEquals($keeper->getDividend(), 0);
+        $this->assertEquals($keeper->assign(), 0);
+        $this->assertEquals($keeper->getAmount(), 0);
+        $this->assertEquals($keeper->getDividend(), 0);
     }
 
-    protected function getAmount($precision)
-    {
-        return round(rand(1000,100000) / 100, $precision);
-    }
-
-    protected function getDividend()
-    {
-        return rand(1,20);
-
-    }
-
-    protected function getPrecision()
-    {
-        return rand(0,3);
-    }
-
-    protected function getVarianceFactor()
-    {
-        return rand(5,15) / 10;
-    }
 }

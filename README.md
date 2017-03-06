@@ -107,3 +107,36 @@ if (!float_equal($total, $sum)) {
 
 var_dump($total, $amounts, $sum);
 ```
+
+## Development
+
+### Test
+
+```bash
+$ phpunit --bootstrap tests/bootstrap.php tests/
+PHPUnit 5.7.15 by Sebastian Bergmann and contributors.
+
+..
+Total amount: 214.4
+Dividend: 20
+Minimum Assignment: 0.86
+Variance factor: 0.7
+Precision: 2
+Assignment value: 10.72
+..
+Total amount: 64
+Dividend: 4
+Minimum Assignment: 7
+Variance factor: 1.5
+Precision: 0
+Assignments: 
+No.0: 19.000000
+No.1: 15.000000
+No.2: 7.000000
+No.3: 23.000000
+.                                                               5 / 5 (100%)
+
+Time: 165 ms, Memory: 13.25MB
+
+OK (5 tests, 36 assertions)
+```
