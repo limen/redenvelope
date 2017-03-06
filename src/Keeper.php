@@ -72,11 +72,7 @@ class Keeper
      */
     public function setAmount($amount)
     {
-        $amount = $this->cutByPrecision($amount);
-
         $this->amount = $this->checkAmount($amount);
-
-        $this->checkAmountEnough();
 
         return $this;
     }
@@ -102,8 +98,6 @@ class Keeper
     public function setDividend($dividend)
     {
         $this->dividend = $this->checkDividend($dividend);
-
-        $this->checkAmountEnough();
 
         return $this;
     }
@@ -142,8 +136,6 @@ class Keeper
      */
     public function setMinAssignment($min)
     {
-        $min = $this->cutByPrecision($min);
-
         $this->minAssignment = $this->checkMinAssignment($min);
 
         return $this;
@@ -155,11 +147,18 @@ class Keeper
      */
     public function assign()
     {
+        $this->amount = $this->cutByPrecision($this->amount);
+        $this->minAssignment = $this->cutByPrecision($this->minAssignment);
+
+        $this->checkAmountEnough();
+
         if ($this->amount == 0 || $this->dividend == 0) {
             return 0;
         }
 
         $get = $this->randomAmount($this->amount, $this->dividend);
+
+        $get = $this->cutByPrecision($get);
 
         $this->amount -= $get;
         $this->dividend--;
@@ -201,7 +200,7 @@ class Keeper
             $remain -= $get;
         }
 
-        return $this->cutByPrecision($get);
+        return $get;
     }
 
     /**
@@ -260,8 +259,6 @@ class Keeper
         if ((!is_float($min) && !is_int($min)) || $min <= 0) {
             Exception::pop(Exception::ERROR_MIN_ASSIGNMENT_ILLEGAL);
         }
-
-        $this->checkAmountEnough();
 
         return $min;
     }

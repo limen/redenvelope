@@ -177,4 +177,11 @@ class Envelope
         return $this->dividend;
     }
 
+    /**
+     * @return LockInterface
+     */
+    public function getLock()
+    {
+        return $this->lock;
+    }
 }
