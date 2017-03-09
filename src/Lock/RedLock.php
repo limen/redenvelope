@@ -59,7 +59,7 @@ class RedLock extends RedModel implements LockInterface
     public function initRedisClient($parameters, $options = null)
     {
         if (!isset($parameters['host']) || empty($parameters['host'])) {
-            $parameters['host'] = '127.0.0.1';
+            $parameters['host'] = 'localhost';
         }
         if (!isset($parameters['port']) || empty($parameters['port'])) {
             $parameters['port'] = 6379;
