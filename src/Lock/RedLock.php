@@ -128,6 +128,8 @@ class RedLock extends RedModel implements LockInterface
                 $success = true;
                 break;
             }
+            // sleep 1 millisecond
+            usleep(1000);
         }
 
         return $success;
