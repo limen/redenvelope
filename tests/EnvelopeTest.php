@@ -21,7 +21,9 @@ class EnvelopeTest extends BaseTest
 {
     public function testAssignment()
     {
-        $envelope = new Envelope();
+        $envelopeId = 1;                // unique id
+
+        $envelope = new Envelope($envelopeId);
 
         $lock = new RedLock();
         $keeper = new Keeper();

@@ -123,8 +123,8 @@ class RedLock extends RedModel implements LockInterface
         $success = false;
 
         for ($i = 0; $i < $this->maxRetryTimes; $i++) {
-            if ($this->where('id', $this->id)->setnx(1)) {
-                $this->where('id', $this->id)->pexpire($this->getTtl());
+            if ($this->newQuery()->where('id', $this->id)->setnx(1)) {
+                $this->newQuery()->where('id', $this->id)->pexpire($this->getTtl());
                 $success = true;
                 break;
             }
