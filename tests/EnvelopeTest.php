@@ -25,9 +25,6 @@ class EnvelopeTest extends BaseTest
 
         $envelope = new Envelope($envelopeId);
 
-        $lock = new RedLock();
-        $keeper = new Keeper();
-
         $precision = $this->getPrecision();
         $vf = $this->getVarianceFactor();
         $amount = $this->getAmount($precision);
@@ -41,30 +38,17 @@ class EnvelopeTest extends BaseTest
         echo "Variance factor: " . $vf . PHP_EOL;
         echo "Precision: " . $precision . PHP_EOL;
 
-        $keeper->setPrecision($precision)->setMinAssignment($minAssignment);
-
         $envelope->setRemain($amount)
             ->setDividend($dividend)
-            ->setKeeper($keeper)
-            ->setLock($lock)
-            ->lock(100, 2000);
+            ->setPrecision($precision)
+            ->setMinAssignment($minAssignment)
+            ->setVarianceFactor($vf);
 
-        $assignment = $envelope->setRemain($amount)
-            ->setDividend($dividend)
-            ->setKeeper($keeper)
-            ->setLock($lock)
-            ->open();
+        $assignment = $envelope->open();
 
         $this->assertGreaterThanOrEqual($minAssignment, $assignment);
         $this->assertEquals($amount - $assignment, $envelope->getRemain());
         $this->assertEquals($dividend - 1, $envelope->getDividend());
-
-        $this->assertTrue($envelope->getLock()->isLocked());
-        $this->assertFalse($envelope->lock(100, 2000));
-
-        $envelope->unlock();
-
-        $this->assertFalse($envelope->getLock()->isLocked());
 
         echo "Assignment value: " . $assignment . PHP_EOL;
     }

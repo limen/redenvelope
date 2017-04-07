@@ -9,7 +9,6 @@
 + Minimum value of each assignment is settable.
 + Amount precision is settable.
 + Variance factor is settable which would influence the variance of the assignment sequence.
-+ Use lock to avoid conflicts caused by concurrency.
 
 ## Installation
 
@@ -30,40 +29,20 @@ $id = '123';                    // unique id
 $remain = 212.23;               // envelope remain amount
 $dividend = 10;                 // how many fragments to divide amount into
 $minAssignment = 10.1;          // minimum value of each assignment
+$precision = 2;                 // assignment precision
 
-$varianceFactor = 1.1;          // Appropriate value should between 0.5 and 1.5, 1.1 may be the best.
+$varianceFactor = 1.0;          // Appropriate value should between 0.5 and 1.5, 1.0 may be the best.
                                 // The greater this value, the greater the variance of the divided sequence is.
 
-$maxRetryTimes = 100;           // Max times to try to lock the envelope when envelope is locked
-$ttl = 1000;                    // In term of millisecond, used as lock ttl when there would be potential unexpected error
-
 $envelope = new Envelope($id);
-$lock = new RedLock();          // Default lock which utilizes redis "setnx"
 
-// lock envelope at first
-if (!$envelope->setLock($lock)->lock($maxRetryTimes, $ttl)) {
-    // alert and exit
-}
-
-/** do something to get remain and dividend **/
-
-// set remain, dividend
 $envelope->setRemain($remain)
     ->setDividend($dividend);
+    ->setPrecision($precision)
+    ->setMinAssignment($minAssignment)
+    ->setVarianceFactor($varianceFactor);
 
-$keeper = new Keeper(null, null, $varianceFactor);         // Keeper who keep and assign money
-$keeper->setMinAssignment($minAssignment);
-
-$envelope->setKeeper($keeper);
-
-$amount = $envelope->open();
-$remain = $envelope->getRemain();
-$dividend = $envelope->getDividend();
-
-/** do something about updating database **/
-
-// unlock envelope finally
-$envelope->unlock();
+$assignment = $envelope->open();
 ```
 
 ## Development

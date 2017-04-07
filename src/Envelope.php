@@ -10,7 +10,7 @@
 
 namespace Limen\RedEnvelope;
 
-use Limen\RedEnvelope\Lock\LockInterface;
+use Limen\RedEnvelope\Contracts\KeeperContract;
 
 /**
  * Class Envelope
@@ -40,12 +40,6 @@ class Envelope
     protected $dividend;
 
     /**
-     * Envelope lock
-     * @var LockInterface
-     */
-    protected $lock;
-
-    /**
      * Keep and assign envelope remain
      * @var Keeper
      */
@@ -62,6 +56,7 @@ class Envelope
         $this->id = $id;
         $this->remain = $remain;
         $this->dividend = (int)$dividend;
+        $this->keeper = new Keeper();
     }
 
     public function setId($id)
@@ -82,6 +77,10 @@ class Envelope
      */
     public function open()
     {
+        if ($this->keeper === null) {
+            $this->keeper = new Keeper();
+        }
+
         $this->keeper->setAmount($this->remain)
             ->setDividend($this->dividend);
 
@@ -94,42 +93,7 @@ class Envelope
     }
 
     /**
-     * Lock envelope
-     * @param $maxRetryTimes
-     * @param $ttl
-     * @return mixed
-     */
-    public function lock($maxRetryTimes, $ttl)
-    {
-        return $this->lock
-            ->setId($this->id)
-            ->setMaxRetryTimes($maxRetryTimes)
-            ->setTtl($ttl)
-            ->lock();
-    }
-
-    /**
-     * Unlock envelope
-     * @return mixed
-     */
-    public function unlock()
-    {
-        return $this->lock->unlock();
-    }
-
-    /**
-     * @param LockInterface $lock
-     * @return $this
-     */
-    public function setLock($lock)
-    {
-        $this->lock = $lock;
-
-        return $this;
-    }
-
-    /**
-     * @param Keeper $keeper
+     * @param KeeperContract $keeper
      * @return $this
      */
     public function setKeeper($keeper)
@@ -137,6 +101,11 @@ class Envelope
         $this->keeper = $keeper;
 
         return $this;
+    }
+
+    public function getKeeper()
+    {
+        return $this->keeper;
     }
 
     /**
@@ -177,11 +146,12 @@ class Envelope
         return $this->dividend;
     }
 
-    /**
-     * @return LockInterface
-     */
-    public function getLock()
+    public function __call($method, $args)
     {
-        return $this->lock;
+        if (method_exists($this->keeper, $method)) {
+            return call_user_func_array([$this->keeper, $method], $args);
+        }
+
+        throw new Exception("Call an undefined method \"$method\"");
     }
 }
