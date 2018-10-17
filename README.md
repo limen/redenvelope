@@ -1,4 +1,4 @@
-# PHP library for red envelope (hongbao) what is popular among Chinese.
+# PHP library for red envelope (红包) what is popular among Chinese.
 
 [![Build Status](https://travis-ci.org/limen/redenvelope.svg?branch=master)](https://travis-ci.org/limen/redenvelope)
 [![Packagist](https://img.shields.io/packagist/l/limen/redenvelope.svg?maxAge=2592000)](https://packagist.org/packages/limen/redenvelope)
