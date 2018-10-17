@@ -22,8 +22,6 @@ composer require "limen/redenvelope"
 
 ```php
 use Limen\RedEnvelope\Envelope;
-use Limen\RedEnvelope\Keeper;
-use Limen\RedEnvelope\Lock\RedLock;
 
 $id = '123';                    // unique id
 $remain = 212.23;               // envelope remain amount
